@@ -14,35 +14,47 @@
             padding: 10px;
             background-color: #f5f5f5;
         }
+        .logo-container {
+            text-align: center;
+            margin: 10px 0 15px;
+        }
+        .logo-universidad {
+            width: 50%;
+            max-width: 200px;
+            height: auto;
+        }
         .container {
             max-width: 100%;
             background: white;
             padding: 15px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
         h1 {
             text-align: center;
             color: #333;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
+            margin: 10px 0 20px;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             font-weight: bold;
+            font-size: 0.95rem;
         }
         input, select, textarea, button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 6px;
             font-size: 1rem;
         }
         textarea {
-            height: 80px;
+            height: 90px;
             resize: vertical;
         }
         button {
@@ -50,8 +62,10 @@
             color: white;
             border: none;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 15px;
             font-weight: bold;
+            font-size: 1.05rem;
+            padding: 14px;
         }
         button:hover {
             background-color: #45a049;
@@ -59,7 +73,7 @@
         .radio-group, .checkbox-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
         .radio-option, .checkbox-option {
             display: flex;
@@ -68,6 +82,7 @@
         .radio-option input, .checkbox-option input {
             width: auto;
             margin-right: 10px;
+            transform: scale(1.2);
         }
         .hidden {
             display: none;
@@ -75,29 +90,40 @@
         .weather-options, .icon-options {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
         }
         .weather-option, .icon-option {
-            flex: 1;
+            flex: 1 1 calc(33% - 10px);
             min-width: 60px;
             text-align: center;
-            padding: 8px;
+            padding: 10px 5px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 0.9rem;
         }
         .weather-option.selected, .icon-option.selected {
             background-color: #e0f7fa;
             border-color: #4CAF50;
         }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        .button-group button {
+            flex: 1;
+        }
+        .button-group button:last-child {
+            background-color: #f44336;
+        }
     </style>
 </head>
 <body>
-
-     <div class="logo-container">
-     <img src="logo-universidad.png" alt="Logo Universidad" class="logo-universidad">
-     </div>
-     <div class="container">
+    <div class="logo-container">
+        <img src="logo-universidad.png" alt="Logo Universidad" class="logo-universidad">
+    </div>
+    
+    <div class="container">
         <h1>📱 App de Relevamiento</h1>
         
         <!-- Primer Apartado -->
@@ -276,7 +302,6 @@
                 <textarea id="obs4" placeholder="Observaciones adicionales..."></textarea>
             </div>
             
-            <!-- Campos del apartado anterior (actividades) -->
             <div class="form-group">
                 <label>Presencia de grupos familiares:</label>
                 <div class="radio-group">
@@ -341,13 +366,14 @@
                 </div>
             </div>
             
-            <button onclick="enviarDatos()">Enviar Datos</button>
-            <button onclick="showApartado1()" style="background-color: #f44336;">Atrás</button>
+            <div class="button-group">
+                <button onclick="enviarDatos()">Enviar Datos</button>
+                <button onclick="showApartado1()">Atrás</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Inicializar fecha y hora actual (sin preseleccionar otros campos)
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             document.getElementById('fecha').value = today.toISOString().split('T')[0];
@@ -356,7 +382,6 @@
             document.getElementById('hora').value = now;
         });
 
-        // Selección de opciones con iconos (clima, mobiliario, etc.)
         function selectOption(element, fieldId) {
             const options = element.parentElement.querySelectorAll('.weather-option, .icon-option');
             options.forEach(opt => opt.classList.remove('selected'));
@@ -364,7 +389,6 @@
             document.getElementById(fieldId).value = element.textContent.trim();
         }
 
-        // Mostrar/ocultar campos condicionales
         function toggleGruposInput() {
             const gruposSi = document.getElementById('grupos-si').checked;
             document.getElementById('grupos-cantidad-container').style.display = gruposSi ? 'block' : 'none';
@@ -375,7 +399,6 @@
             document.getElementById('otra-actividad-container').style.display = otraChecked ? 'block' : 'none';
         }
 
-        // Validar antes de pasar al apartado 2
         function validateApartado1() {
             const observador = document.getElementById('observador').value;
             const plaza = document.getElementById('plaza').value;
@@ -388,20 +411,19 @@
             showApartado2();
         }
 
-        // Navegación entre apartados
         function showApartado2() {
             document.getElementById('apartado1').classList.add('hidden');
             document.getElementById('apartado2').classList.remove('hidden');
+            window.scrollTo(0, 0);
         }
 
         function showApartado1() {
             document.getElementById('apartado2').classList.add('hidden');
             document.getElementById('apartado1').classList.remove('hidden');
+            window.scrollTo(0, 0);
         }
 
-        // Enviar datos (simulación)
         function enviarDatos() {
-            // Validar campos obligatorios del apartado 2
             const usoEspacio = document.querySelector('input[name="uso-espacio"]:checked');
             const sensacion = document.querySelector('input[name="sensacion"]:checked');
             const policial = document.querySelector('input[name="policial"]:checked');
@@ -412,7 +434,6 @@
             }
             
             alert('¡Datos enviados correctamente! ✅\n(En una app real, aquí se enviaría a un servidor)');
-            // Aquí iría una llamada AJAX o Fetch para enviar los datos
         }
     </script>
 </body>
