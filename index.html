@@ -72,12 +72,12 @@
         .hidden {
             display: none;
         }
-        .weather-options {
+        .weather-options, .icon-options {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
         }
-        .weather-option {
+        .weather-option, .icon-option {
             flex: 1;
             min-width: 60px;
             text-align: center;
@@ -86,7 +86,7 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        .weather-option.selected {
+        .weather-option.selected, .icon-option.selected {
             background-color: #e0f7fa;
             border-color: #4CAF50;
         }
@@ -110,7 +110,8 @@
             
             <div class="form-group">
                 <label>Observador:</label>
-                <select id="observador">
+                <select id="observador" required>
+                    <option value="" disabled selected>Seleccionar...</option>
                     <option value="Francisco">Francisco</option>
                     <option value="Matias">Matías</option>
                     <option value="Florencia">Florencia</option>
@@ -121,7 +122,8 @@
             
             <div class="form-group">
                 <label>Plaza:</label>
-                <select id="plaza">
+                <select id="plaza" required>
+                    <option value="" disabled selected>Seleccionar...</option>
                     <option value="Italia">Italia</option>
                     <option value="San Martin">San Martín</option>
                     <option value="Rocha">Rocha</option>
@@ -131,25 +133,25 @@
             <div class="form-group">
                 <label>Condiciones Climáticas:</label>
                 <div class="weather-options">
-                    <div class="weather-option" onclick="selectWeather(this)">☀️ Soleado</div>
-                    <div class="weather-option" onclick="selectWeather(this)">☁️ Nublado</div>
-                    <div class="weather-option" onclick="selectWeather(this)">🌧️ Lluvia</div>
-                    <div class="weather-option" onclick="selectWeather(this)">🌬️ Viento</div>
-                    <div class="weather-option" onclick="selectWeather(this)">❄️ Frío</div>
+                    <div class="weather-option" onclick="selectOption(this, 'clima')">☀️ Soleado</div>
+                    <div class="weather-option" onclick="selectOption(this, 'clima')">☁️ Nublado</div>
+                    <div class="weather-option" onclick="selectOption(this, 'clima')">🌧️ Lluvia</div>
+                    <div class="weather-option" onclick="selectOption(this, 'clima')">🌬️ Viento</div>
+                    <div class="weather-option" onclick="selectOption(this, 'clima')">❄️ Frío</div>
                 </div>
-                <input type="hidden" id="clima" name="clima">
+                <input type="hidden" id="clima" name="clima" required>
             </div>
             
-            <button onclick="showApartado2()">Siguiente</button>
+            <button onclick="validateApartado1()">Siguiente</button>
         </div>
         
-        <!-- Segundo Apartado (oculto inicialmente) -->
+        <!-- Segundo Apartado -->
         <div id="apartado2" class="hidden">
             <div class="form-group">
                 <label>Tipo de uso de espacio:</label>
                 <div class="radio-group">
                     <div class="radio-option">
-                        <input type="radio" id="transito" name="uso-espacio" value="Transito" checked>
+                        <input type="radio" id="transito" name="uso-espacio" value="Transito">
                         <label for="transito">Tránsito</label>
                     </div>
                     <div class="radio-option">
@@ -165,14 +167,121 @@
             </div>
             
             <div class="form-group">
-                <label>Presencia de Grupos Familiares:</label>
+                <label>Uso de mobiliario Urbano:</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="bancos" name="mobiliario" value="Bancos">
+                        <label for="bancos">Bancos</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="mesas" name="mobiliario" value="Mesas">
+                        <label for="mesas">Mesas</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="pasto" name="mobiliario" value="Pasto">
+                        <label for="pasto">Pasto</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="juegos-mob" name="mobiliario" value="Juegos">
+                        <label for="juegos-mob">Juegos</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="bicicleteros" name="mobiliario" value="Bicicleteros">
+                        <label for="bicicleteros">Bicicleteros</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Diversidad de población:</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="ninos" name="poblacion" value="Niños">
+                        <label for="ninos">Niños</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="adolescentes" name="poblacion" value="Adolescentes">
+                        <label for="adolescentes">Adolescentes</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="adultos" name="poblacion" value="Adultos">
+                        <label for="adultos">Adultos</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="mayores" name="poblacion" value="Mayores">
+                        <label for="mayores">Mayores</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="discapacidad" name="poblacion" value="Personas con discapacidad">
+                        <label for="discapacidad">Personas con discapacidad</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="estudiantes" name="poblacion" value="Grupos de estudiantes">
+                        <label for="estudiantes">Grupos de estudiantes</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="obs3">Observaciones 3:</label>
+                <textarea id="obs3" placeholder="Observaciones sobre población..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Sensación general del ambiente:</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="tranquilo" name="sensacion" value="Tranquilo">
+                        <label for="tranquilo">Tranquilo</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="dinamico" name="sensacion" value="Dinámico">
+                        <label for="dinamico">Dinámico</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="tenso" name="sensacion" value="Tenso">
+                        <label for="tenso">Tenso</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Presencia policial o de control:</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="policial-si" name="policial" value="Sí">
+                        <label for="policial-si">Sí</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="policial-no" name="policial" value="No">
+                        <label for="policial-no">No</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="policial-interaccion" name="policial" value="Interacción con la gente">
+                        <label for="policial-interaccion">Interacción con la gente</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="policial-patrullaje" name="policial" value="Patrullaje">
+                        <label for="policial-patrullaje">Patrullaje</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="obs4">Observaciones 4:</label>
+                <textarea id="obs4" placeholder="Observaciones adicionales..."></textarea>
+            </div>
+            
+            <!-- Campos del apartado anterior (actividades) -->
+            <div class="form-group">
+                <label>Presencia de grupos familiares:</label>
                 <div class="radio-group">
                     <div class="radio-option">
                         <input type="radio" id="grupos-si" name="grupos-familiares" value="si" onclick="toggleGruposInput()">
                         <label for="grupos-si">Sí</label>
                     </div>
                     <div class="radio-option">
-                        <input type="radio" id="grupos-no" name="grupos-familiares" value="no" onclick="toggleGruposInput()" checked>
+                        <input type="radio" id="grupos-no" name="grupos-familiares" value="no" onclick="toggleGruposInput()">
                         <label for="grupos-no">No</label>
                     </div>
                 </div>
@@ -180,11 +289,6 @@
                     <label for="grupos-cantidad">¿Cuántos?</label>
                     <input type="number" id="grupos-cantidad" min="1" value="1">
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="obs2">Observaciones 2:</label>
-                <textarea id="obs2" placeholder="Otras observaciones..."></textarea>
             </div>
             
             <div class="form-group">
@@ -239,7 +343,7 @@
     </div>
 
     <script>
-        // Inicializar fecha y hora actual
+        // Inicializar fecha y hora actual (sin preseleccionar otros campos)
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             document.getElementById('fecha').value = today.toISOString().split('T')[0];
@@ -248,12 +352,12 @@
             document.getElementById('hora').value = now;
         });
 
-        // Selección de clima (estilo visual)
-        function selectWeather(element) {
-            const options = document.querySelectorAll('.weather-option');
+        // Selección de opciones con iconos (clima, mobiliario, etc.)
+        function selectOption(element, fieldId) {
+            const options = element.parentElement.querySelectorAll('.weather-option, .icon-option');
             options.forEach(opt => opt.classList.remove('selected'));
             element.classList.add('selected');
-            document.getElementById('clima').value = element.textContent;
+            document.getElementById(fieldId).value = element.textContent.trim();
         }
 
         // Mostrar/ocultar campos condicionales
@@ -265,6 +369,19 @@
         function toggleOtraActividad() {
             const otraChecked = document.getElementById('otra').checked;
             document.getElementById('otra-actividad-container').style.display = otraChecked ? 'block' : 'none';
+        }
+
+        // Validar antes de pasar al apartado 2
+        function validateApartado1() {
+            const observador = document.getElementById('observador').value;
+            const plaza = document.getElementById('plaza').value;
+            const clima = document.getElementById('clima').value;
+            
+            if (!observador || !plaza || !clima) {
+                alert('¡Falta completar campos obligatorios!');
+                return;
+            }
+            showApartado2();
         }
 
         // Navegación entre apartados
@@ -280,7 +397,17 @@
 
         // Enviar datos (simulación)
         function enviarDatos() {
-            alert('¡Datos enviados correctamente! �\n(En una app real, aquí se enviaría a un servidor)');
+            // Validar campos obligatorios del apartado 2
+            const usoEspacio = document.querySelector('input[name="uso-espacio"]:checked');
+            const sensacion = document.querySelector('input[name="sensacion"]:checked');
+            const policial = document.querySelector('input[name="policial"]:checked');
+            
+            if (!usoEspacio || !sensacion || !policial) {
+                alert('¡Completa los campos obligatorios antes de enviar!');
+                return;
+            }
+            
+            alert('¡Datos enviados correctamente! ✅\n(En una app real, aquí se enviaría a un servidor)');
             // Aquí iría una llamada AJAX o Fetch para enviar los datos
         }
     </script>
