@@ -116,6 +116,21 @@
         .button-group button:last-child {
             background-color: #f44336;
         }
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        #debug-info {
+            display: none;
+            background: #fff8e1;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
@@ -125,6 +140,8 @@
     
     <div class="container">
         <h1>📱 App de Relevamiento</h1>
+        <div id="loading">Enviando datos, por favor espera...</div>
+        <div id="debug-info"></div>
         
         <!-- Primer Apartado -->
         <div id="apartado1">
@@ -197,7 +214,7 @@
             </div>
             
             <div class="form-group">
-                <label>Uso de mobiliario Urbano:</label>
+                <label>Uso de Mobiliario Urbano:</label>
                 <div class="checkbox-group">
                     <div class="checkbox-option">
                         <input type="checkbox" id="bancos" name="mobiliario" value="Bancos">
@@ -223,7 +240,7 @@
             </div>
             
             <div class="form-group">
-                <label>Diversidad de población:</label>
+                <label>Diversidad de Poblacion:</label>
                 <div class="checkbox-group">
                     <div class="checkbox-option">
                         <input type="checkbox" id="ninos" name="poblacion" value="Niños">
@@ -253,12 +270,12 @@
             </div>
             
             <div class="form-group">
-                <label for="obs3">Observaciones 3:</label>
+                <label for="obs3">Observaciones 2:</label>
                 <textarea id="obs3" placeholder="Observaciones sobre población..."></textarea>
             </div>
             
             <div class="form-group">
-                <label>Sensación general del ambiente:</label>
+                <label>Sensacion general del ambiente:</label>
                 <div class="radio-group">
                     <div class="radio-option">
                         <input type="radio" id="tranquilo" name="sensacion" value="Tranquilo">
@@ -298,7 +315,7 @@
             </div>
             
             <div class="form-group">
-                <label for="obs4">Observaciones 4:</label>
+                <label for="obs4">Observaciones 3:</label>
                 <textarea id="obs4" placeholder="Observaciones adicionales..."></textarea>
             </div>
             
@@ -374,6 +391,10 @@
     </div>
 
     <script>
+        // URL de SheetBest
+        const SHEETBEST_URL = 'https://sheet.best/api/sheets/9a34b6e2-ada4-4920-b83f-c2b286fdfe15';
+
+        // Inicializar fecha y hora actual
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             document.getElementById('fecha').value = today.toISOString().split('T')[0];
@@ -382,6 +403,7 @@
             document.getElementById('hora').value = now;
         });
 
+        // Selección de opciones con iconos
         function selectOption(element, fieldId) {
             const options = element.parentElement.querySelectorAll('.weather-option, .icon-option');
             options.forEach(opt => opt.classList.remove('selected'));
@@ -389,6 +411,7 @@
             document.getElementById(fieldId).value = element.textContent.trim();
         }
 
+        // Mostrar/ocultar campos condicionales
         function toggleGruposInput() {
             const gruposSi = document.getElementById('grupos-si').checked;
             document.getElementById('grupos-cantidad-container').style.display = gruposSi ? 'block' : 'none';
@@ -399,18 +422,23 @@
             document.getElementById('otra-actividad-container').style.display = otraChecked ? 'block' : 'none';
         }
 
+        // Validar antes de pasar al apartado 2
         function validateApartado1() {
-            const observador = document.getElementById('observador').value;
-            const plaza = document.getElementById('plaza').value;
-            const clima = document.getElementById('clima').value;
-            
-            if (!observador || !plaza || !clima) {
-                alert('¡Falta completar campos obligatorios!');
+            const camposRequeridos = [
+                { element: document.getElementById('observador').value, message: "Observador" },
+                { element: document.getElementById('plaza').value, message: "Plaza" },
+                { element: document.getElementById('clima').value, message: "Condiciones climáticas" }
+            ];
+
+            const camposFaltantes = camposRequeridos.filter(campo => !campo.element);
+            if (camposFaltantes.length > 0) {
+                alert(`¡Falta completar:\n${camposFaltantes.map(c => "• " + c.message).join("\n")}`);
                 return;
             }
             showApartado2();
         }
 
+        // Navegación entre apartados
         function showApartado2() {
             document.getElementById('apartado1').classList.add('hidden');
             document.getElementById('apartado2').classList.remove('hidden');
@@ -423,17 +451,125 @@
             window.scrollTo(0, 0);
         }
 
-        function enviarDatos() {
-            const usoEspacio = document.querySelector('input[name="uso-espacio"]:checked');
-            const sensacion = document.querySelector('input[name="sensacion"]:checked');
-            const policial = document.querySelector('input[name="policial"]:checked');
+        // Helper: Obtener checkboxes seleccionados
+        function getSelectedCheckboxes(name) {
+            return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
+                       .map(el => el.value).join(', ');
+        }
+
+        // Helper: Obtener datos de grupos familiares
+        function getGruposFamiliares() {
+            const tieneGrupos = document.getElementById('grupos-si').checked;
+            return tieneGrupos ? `Sí (${document.getElementById('grupos-cantidad').value})` : 'No';
+        }
+
+        // Helper: Obtener actividades con "Otra" si existe
+        function getActividades() {
+            const actividades = getSelectedCheckboxes('actividades');
+            const otraActividad = document.getElementById('otra-actividad').value;
             
-            if (!usoEspacio || !sensacion || !policial) {
-                alert('¡Completa los campos obligatorios antes de enviar!');
+            if (document.getElementById('otra').checked && otraActividad) {
+                return actividades + (actividades ? ', ' : '') + `Otra: ${otraActividad}`;
+            }
+            return actividades;
+        }
+
+        // Función para enviar datos (CON NOMBRES DE COLUMNAS EXACTOS)
+        async function enviarDatos() {
+            // 1. Validar campos obligatorios
+            const camposRequeridos = [
+                { element: document.querySelector('input[name="uso-espacio"]:checked'), message: "Tipo de uso de espacio" },
+                { element: document.querySelector('input[name="sensacion"]:checked'), message: "Sensación general" },
+                { element: document.querySelector('input[name="policial"]:checked'), message: "Presencia policial" }
+            ];
+
+            const camposFaltantes = camposRequeridos.filter(campo => !campo.element);
+            if (camposFaltantes.length > 0) {
+                alert(`¡Falta completar:\n${camposFaltantes.map(c => "• " + c.message).join("\n")}`);
                 return;
             }
-            
-            alert('¡Datos enviados correctamente! ✅\n(En una app real, aquí se enviaría a un servidor)');
+
+            // 2. Recolectar datos con nombres EXACTOS de columnas
+            const data = {
+                "Fecha": document.getElementById('fecha').value,
+                "Hora": document.getElementById('hora').value,
+                "Observador": document.getElementById('observador').value,
+                "Plaza": document.getElementById('plaza').value,
+                "Condiciones Climaticas": document.getElementById('clima').value,
+                "Tipo de uso de espacio": document.querySelector('input[name="uso-espacio"]:checked').value,
+                "Observaciones 1": document.getElementById('obs1').value,
+                "Uso de Mobiliario Urbano": getSelectedCheckboxes('mobiliario'),
+                "Diversidad de Poblacion": getSelectedCheckboxes('poblacion'),
+                "Observaciones 2": document.getElementById('obs3').value,
+                "Sensacion general del ambiente": document.querySelector('input[name="sensacion"]:checked').value,
+                "Presencia policial o de control": document.querySelector('input[name="policial"]:checked').value,
+                "Observaciones 3": document.getElementById('obs4').value,
+                "Presencia de grupos familiares": getGruposFamiliares(),
+                "Actividades Observadas": getActividades()
+            };
+
+            // 3. Configurar UI de carga
+            const submitBtn = document.querySelector('button[onclick="enviarDatos()"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Enviando...';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('debug-info').style.display = 'none';
+
+            try {
+                // 4. Enviar a SheetBest
+                const response = await fetch(SHEETBEST_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                // 5. Verificar respuesta
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error HTTP ${response.status}: ${errorText || 'Sin detalles'}`);
+                }
+
+                // 6. ÉXITO - Resetear formulario
+                alert('✅ ¡Datos guardados correctamente!');
+                document.getElementById('apartado2').classList.add('hidden');
+                document.getElementById('apartado1').classList.remove('hidden');
+                
+                // Reset manual de campos
+                document.getElementById('fecha').value = '';
+                document.getElementById('hora').value = '';
+                document.getElementById('observador').selectedIndex = 0;
+                document.getElementById('plaza').selectedIndex = 0;
+                document.querySelectorAll('.weather-option').forEach(opt => opt.classList.remove('selected'));
+                document.getElementById('clima').value = '';
+                document.getElementById('obs1').value = '';
+                document.getElementById('obs3').value = '';
+                document.getElementById('obs4').value = '';
+                document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+                document.getElementById('otra-actividad').value = '';
+                document.getElementById('grupos-cantidad').value = '1';
+                document.getElementById('grupos-cantidad-container').style.display = 'none';
+
+            } catch (error) {
+                // 7. ERROR - Mostrar detalles
+                console.error("Error completo:", error);
+                
+                const debugInfo = document.getElementById('debug-info');
+                debugInfo.innerHTML = `
+                    <strong>⚠️ Error al enviar:</strong> ${error.message}<br><br>
+                    <strong>📋 Datos intentados:</strong><br>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                    <small>Verifica que tu Sheet tenga estas columnas exactas:<br>
+                    Fecha, Hora, Observador, Plaza, Condiciones Climaticas, Tipo de uso de espacio, Observaciones 1, Uso de Mobiliario Urbano, Diversidad de Poblacion, Observaciones 2, Sensacion general del ambiente, Presencia policial o de control, Observaciones 3, Presencia de grupos familiares, Actividades Observadas</small>
+                `;
+                debugInfo.style.display = 'block';
+
+            } finally {
+                // 8. Restaurar UI
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Enviar Datos';
+                document.getElementById('loading').style.display = 'none';
+            }
         }
     </script>
 </body>
