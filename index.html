@@ -201,6 +201,35 @@
             font-weight: 600;
         }
         
+        .multi-select-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .multi-select-option {
+            flex: 1 1 calc(33% - 10px);
+            min-width: 70px;
+            text-align: center;
+            padding: 12px 5px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        
+        .multi-select-option:hover {
+            border-color: var(--color-primario);
+        }
+        
+        .multi-select-option.selected {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-color: var(--color-primario);
+            color: var(--color-primario);
+            font-weight: 600;
+        }
+        
         .button-group {
             display: flex;
             gap: 12px;
@@ -297,13 +326,13 @@
             </div>
             
             <div class="form-group">
-                <label>🌤️ Condiciones Climáticas:</label>
-                <div class="weather-options">
-                    <div class="weather-option" onclick="selectOption(this, 'clima')">☀️ Soleado</div>
-                    <div class="weather-option" onclick="selectOption(this, 'clima')">☁️ Nublado</div>
-                    <div class="weather-option" onclick="selectOption(this, 'clima')">🌧️ Lluvia</div>
-                    <div class="weather-option" onclick="selectOption(this, 'clima')">🌬️ Viento</div>
-                    <div class="weather-option" onclick="selectOption(this, 'clima')">❄️ Frío</div>
+                <label>🌤️ Condiciones Climáticas (puede elegir varias):</label>
+                <div class="multi-select-options" id="clima-options">
+                    <div class="multi-select-option" data-value="Soleado">☀️ Soleado</div>
+                    <div class="multi-select-option" data-value="Nublado">☁️ Nublado</div>
+                    <div class="multi-select-option" data-value="Lluvia">🌧️ Lluvia</div>
+                    <div class="multi-select-option" data-value="Viento">🌬️ Viento</div>
+                    <div class="multi-select-option" data-value="Frío">❄️ Frío</div>
                 </div>
                 <input type="hidden" id="clima" name="clima" required>
             </div>
@@ -313,17 +342,12 @@
         
         <div id="apartado2" class="hidden">
             <div class="form-group">
-                <label>📍 Tipo de uso de espacio:</label>
-                <div class="radio-group">
-                    <div class="radio-option">
-                        <input type="radio" id="transito" name="uso-espacio" value="Transito">
-                        <label for="transito">Tránsito</label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" id="permanencia" name="uso-espacio" value="Permanencia">
-                        <label for="permanencia">Permanencia</label>
-                    </div>
+                <label>📍 Tipo de uso de espacio (puede elegir varias):</label>
+                <div class="multi-select-options" id="uso-espacio-options">
+                    <div class="multi-select-option" data-value="Tránsito">Tránsito</div>
+                    <div class="multi-select-option" data-value="Permanencia">Permanencia</div>
                 </div>
+                <input type="hidden" id="uso-espacio" name="uso-espacio">
             </div>
             
             <div class="form-group">
@@ -411,25 +435,14 @@
             </div>
             
             <div class="form-group">
-                <label>👮 Presencia policial o de control:</label>
-                <div class="radio-group">
-                    <div class="radio-option">
-                        <input type="radio" id="policial-si" name="policial" value="Sí">
-                        <label for="policial-si">Sí</label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" id="policial-no" name="policial" value="No">
-                        <label for="policial-no">No</label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" id="policial-interaccion" name="policial" value="Interacción con la gente">
-                        <label for="policial-interaccion">Interacción con la gente</label>
-                    </div>
-                    <div class="radio-option">
-                        <input type="radio" id="policial-patrullaje" name="policial" value="Patrullaje">
-                        <label for="policial-patrullaje">Patrullaje</label>
-                    </div>
+                <label>👮 Presencia policial o de control (puede elegir varias):</label>
+                <div class="multi-select-options" id="policial-options">
+                    <div class="multi-select-option" data-value="Sí">Sí</div>
+                    <div class="multi-select-option" data-value="No">No</div>
+                    <div class="multi-select-option" data-value="Interacción con la gente">Interacción con la gente</div>
+                    <div class="multi-select-option" data-value="Patrullaje">Patrullaje</div>
                 </div>
+                <input type="hidden" id="policial" name="policial">
             </div>
             
             <div class="form-group">
@@ -517,13 +530,28 @@
             
             const now = today.toTimeString().substring(0, 5);
             document.getElementById('hora').value = now;
+            
+            // Inicializar eventos para selección múltiple
+            setupMultiSelect('clima-options', 'clima');
+            setupMultiSelect('uso-espacio-options', 'uso-espacio');
+            setupMultiSelect('policial-options', 'policial');
         });
 
-        function selectOption(element, fieldId) {
-            const options = element.parentElement.querySelectorAll('.weather-option, .icon-option');
-            options.forEach(opt => opt.classList.remove('selected'));
-            element.classList.add('selected');
-            document.getElementById(fieldId).value = element.textContent.trim();
+        function setupMultiSelect(containerId, hiddenInputId) {
+            const options = document.getElementById(containerId).querySelectorAll('.multi-select-option');
+            
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    updateHiddenInput(containerId, hiddenInputId);
+                });
+            });
+        }
+
+        function updateHiddenInput(containerId, hiddenInputId) {
+            const selectedOptions = Array.from(document.getElementById(containerId).querySelectorAll('.multi-select-option.selected'));
+            const values = selectedOptions.map(opt => opt.getAttribute('data-value')).join(', ');
+            document.getElementById(hiddenInputId).value = values;
         }
 
         function toggleGruposInput() {
@@ -585,9 +613,9 @@
 
         async function enviarDatos() {
             const camposRequeridos = [
-                { element: document.querySelector('input[name="uso-espacio"]:checked'), message: "Tipo de uso de espacio" },
+                { element: document.getElementById('uso-espacio').value, message: "Tipo de uso de espacio" },
                 { element: document.querySelector('input[name="sensacion"]:checked'), message: "Sensación general" },
-                { element: document.querySelector('input[name="policial"]:checked'), message: "Presencia policial" }
+                { element: document.getElementById('policial').value, message: "Presencia policial" }
             ];
 
             const camposFaltantes = camposRequeridos.filter(campo => !campo.element);
@@ -602,13 +630,13 @@
                 "Observador": document.getElementById('observador').value,
                 "Plaza": document.getElementById('plaza').value,
                 "Condiciones Climaticas": document.getElementById('clima').value,
-                "Tipo de uso de espacio": document.querySelector('input[name="uso-espacio"]:checked').value,
+                "Tipo de uso de espacio": document.getElementById('uso-espacio').value,
                 "Observaciones 1": document.getElementById('obs1').value,
                 "Uso de Mobiliario Urbano": getSelectedCheckboxes('mobiliario'),
                 "Diversidad de Poblacion": getSelectedCheckboxes('poblacion'),
                 "Observaciones 2": document.getElementById('obs3').value,
                 "Sensacion general del ambiente": document.querySelector('input[name="sensacion"]:checked').value,
-                "Presencia policial o de control": document.querySelector('input[name="policial"]:checked').value,
+                "Presencia policial o de control": document.getElementById('policial').value,
                 "Observaciones 3": document.getElementById('obs4').value,
                 "Presencia de grupos familiares": getGruposFamiliares(),
                 "Actividades Observadas": getActividades()
@@ -636,12 +664,18 @@
                 document.getElementById('apartado2').classList.add('hidden');
                 document.getElementById('apartado1').classList.remove('hidden');
                 
+                // Resetear formulario
                 document.getElementById('fecha').value = '';
                 document.getElementById('hora').value = '';
                 document.getElementById('observador').selectedIndex = 0;
                 document.getElementById('plaza').selectedIndex = 0;
-                document.querySelectorAll('.weather-option').forEach(opt => opt.classList.remove('selected'));
+                
+                // Resetear selecciones múltiples
+                document.querySelectorAll('.multi-select-option.selected').forEach(opt => opt.classList.remove('selected'));
                 document.getElementById('clima').value = '';
+                document.getElementById('uso-espacio').value = '';
+                document.getElementById('policial').value = '';
+                
                 document.getElementById('obs1').value = '';
                 document.getElementById('obs3').value = '';
                 document.getElementById('obs4').value = '';
